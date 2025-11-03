@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["go", "nodejs", "bun", "make"]
+nixPkgs = ["go", "nodejs", "bun"]
 
 [phases.install]
 cmds = ["make install"]
