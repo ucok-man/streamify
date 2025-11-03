@@ -77,10 +77,10 @@ export default function OutgoingFriendRequest() {
       <Wrapper>
         <div className="card flex h-[280px] w-full items-center justify-center bg-base-200 p-5 text-center">
           <h3 className="mb-2 text-lg font-semibold">
-            No incoming friends request yet
+            No outgoing friends request yet
           </h3>
           <p className="text-base-content opacity-70">
-            You don't have any incoming request available!
+            You don't have any outgoing request available!
           </p>
         </div>
       </Wrapper>
