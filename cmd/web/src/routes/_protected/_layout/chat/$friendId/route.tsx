@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_protected/_layout/chat/$friendId")({
       });
 
     const streamclient = StreamChat.getInstance(
-      import.meta.env.VITE_GET_STREAM_API_KEY
+      import.meta.env.VITE_GETSTREAMIO_API_KEY
     );
 
     const { data: user } = context.session;

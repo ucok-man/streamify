@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_protected/call/$channelId")({
       });
 
     const streamclient = new StreamVideoClient({
-      apiKey: import.meta.env.VITE_GET_STREAM_API_KEY,
+      apiKey: import.meta.env.VITE_GETSTREAMIO_API_KEY,
       user: {
         id: user.id,
         name: user.full_name,
