@@ -37,7 +37,7 @@ export default function IncomingCard({ item }: Props) {
                 <span className="badge badge-sm badge-secondary">
                   Native: {item.sender.native_lng}
                 </span>
-                <span className="badge-outline badge badge-sm">
+                <span className="badge badge-outline badge-sm">
                   Learning: {item.sender.learning_lng}
                 </span>
               </div>

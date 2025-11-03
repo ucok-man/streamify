@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import { useMutation } from "@tanstack/react-query";
 import {
   Link,
@@ -150,7 +151,7 @@ const Navbar = () => {
                 <button
                   disabled={signout.isPending || isRedirecting}
                   onClick={() => signout.mutate()}
-                  className="btn mt-4 w-full btn-sm btn-error"
+                  className="btn my-2 w-full justify-start gap-1 px-3 text-left normal-case btn-error"
                 >
                   <LogOutIcon className="mr-2 h-5 w-5" />
                   <span className="text-sm">Logout</span>
