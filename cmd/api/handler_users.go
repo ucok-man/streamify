@@ -153,6 +153,7 @@ func (app *application) requestFriend(w http.ResponseWriter, r *http.Request) {
 	friendRequest := &models.FriendRequest{
 		SenderID:    currentUser.ID,
 		RecipientID: recipient.ID,
+		Status:      models.FriendRequestStatusPending,
 	}
 
 	friendRequest, err = app.models.FriendRequest.Create(friendRequest)

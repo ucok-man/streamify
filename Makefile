@@ -30,8 +30,8 @@ dev/api:
 	@air -c .air.toml
 
 ## dev: Run both web and api in development mode
-##: #note you need to install concurrently globaly 
-##: #npm install -g concurrently
+##:	- note you need to install concurrently globaly 
+##:	- npm install -g concurrently
 .PHONY: dev
 dev:
 	@concurrently "make dev/web" "make dev/api"
@@ -49,6 +49,12 @@ build/web:
 build/api:
 	@go build -o ./build/server ./cmd/api/*.go
 
+## build: build the web and server
+.PHONY: build
+build:
+	@make build/web
+	@make build/api
+
 ## serve: serve production mode from build artifact
 .PHONY: serve
 serve:
@@ -59,7 +65,7 @@ serve:
 #                                 CLI                                #
 # ------------------------------------------------------------------ #
 ## cli: run the cmd/cli application $(ARGS) 
-##: #ex `make cli ARGS="db seed"`
+##:	- ex `make cli ARGS="db seed"`
 .PHONY: cli
 cli:
 	@go run ./cmd/cli/*.go $(ARGS)
