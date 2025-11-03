@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["go", "nodejs", "bun", "make"]
+
+[phases.install]
+cmds = ["make install"]
+
+[phases.build]
+cmds = ["make build"]
+
+[start]
+cmd = "make serve"
