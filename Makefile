@@ -15,6 +15,16 @@ help:
 confirm:
 	@echo 'Are you sure? [y/N]' && read ans && [ $${ans:-N} = y ]
 
+# ------------------------------------------------------------------ #
+#                          Install Script                            #
+# ------------------------------------------------------------------ #
+## dev/web: install the dependency
+.PHONY: install
+install:
+	@go mod download && go mod tidy
+	@cd cmd/web && bun install
+
+
 
 # ------------------------------------------------------------------ #
 #                             DEV SCRIPT                             #
