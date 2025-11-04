@@ -16,8 +16,8 @@ RUN go build -o ./build/server ./cmd/api/*.go
 
 FROM golang:1.25-alpine as dockploy
 WORKDIR /app
-COPY --from=node-builder /app/build/ /app/
-COPY --from=go-builder /app/build/ /app/
+COPY --from=node-builder /app/ /app/
+COPY --from=go-builder /app/ /app/
 
 EXPOSE 8000
-CMD [ "./server" ]
+CMD [ "./build/server" ]
