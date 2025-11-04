@@ -11,7 +11,7 @@ var configSchema = z.Struct(z.Schema{
 		"level": z.String().Required().OneOf([]string{"trace", "debug", "info", "warn", "error", "fatal", "panic"}),
 	}),
 	"Cors": z.Struct(z.Schema{
-		"Origins": z.Slice(z.String().URL(z.Message("Each origins item must be valid url"))).Optional(),
+		"Origins": z.Slice(z.String().Required().URL(z.Message("Each origins item must be valid url"))).Optional(),
 	}),
 	"DB": z.Struct(z.Schema{
 		"MongoURI":      z.String().Required(),
@@ -27,6 +27,4 @@ var configSchema = z.Struct(z.Schema{
 	"JWT": z.Struct(z.Schema{
 		"AuthSecret": z.String().Required(),
 	}),
-
-	// "a": ,
 })

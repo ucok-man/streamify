@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -20,7 +19,7 @@ func init() {
 }
 
 type Config struct {
-	Port int    `mapstructure:"PORT"`
+	Port int    `mapstructure:"API_PORT"`
 	Env  string `mapstructure:"API_ENV"`
 	Log  struct {
 		Level string `mapstructure:"API_LOG_LEVEL"`
@@ -48,20 +47,25 @@ func New() Config {
 	viper.SetConfigFile(".env") // Config file name without extension
 	viper.SetConfigType("env")  // Config file type
 	viper.AddConfigPath(".")    // Look for the config file in the current directory
-	viper.AutomaticEnv()
+	viper.AutomaticEnv()        // Load system env
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal().Err(err).Msg("Error reading config file")
+		log.Info().Msg("No .env file found, using environment variables only")
 	}
 
 	var config Config
-	err := viper.Unmarshal(&config, func(dc *mapstructure.DecoderConfig) {
-		dc.ErrorUnset = true
-		// dc.ErrorUnused = true
-	})
-	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to decode config file")
-	}
+	config.Port = viper.GetInt("API_PORT")
+	config.Env = viper.GetString("API_ENV")
+	config.Log.Level = viper.GetString("API_LOG_LEVEL")
+	config.DB.MongoURI = viper.GetString("API_DB_MONGO_URI")
+	config.DB.DatabaseName = viper.GetString("API_DB_DATABASE_NAME")
+	config.DB.MaxConnecting = viper.GetUint64("API_DB_MAX_CONNECTING")
+	config.DB.MaxPoolSize = viper.GetUint64("API_DB_MAX_POOL_SIZE")
+	config.DB.MaxIdleTime = viper.GetDuration("API_DB_MAX_IDLE_TIME")
+	config.Cors.Origins = viper.GetStringSlice("API_CORS_ORIGINS")
+	config.GetStreamIO.ApiKey = viper.GetString("API_GETSTREAMIO_API_KEY")
+	config.GetStreamIO.ApiSecret = viper.GetString("API_GETSTREAMIO_API_SECRET")
+	config.JWT.AuthSecret = viper.GetString("API_JWT_AUTH_SECRET")
 
 	errmap := validator.Schema().Config.Validate(&config)
 	if errmap != nil {
