@@ -1,0 +1,113 @@
+# Name of this workflow - will appear in GitHub Actions tab
+name: Build and Push Docker Images
+
+# Define when this workflow should run
+on:
+  push:
+    # Run when code is pushed to these branches
+    branches:
+      - main
+  pull_request:
+    # Also run when someone creates a pull request to these branches
+    branches:
+      - main
+
+# Environment variables that can be used throughout the workflow
+# These are available to all jobs below
+env:
+  REGISTRY: docker.io # Docker Hub registry URL
+  APP_REPO_NAME: streamify
+  APP_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/streamify
+
+# Jobs are the main tasks that run in the workflow
+jobs:
+  # Name of the job
+  build-and-push:
+    # Use Ubuntu as the operating system for this job
+    runs-on: ubuntu-latest
+
+    # Permissions needed for this job
+    permissions:
+      contents: read # Read repository files
+      packages: write # Write to Docker registry
+
+    # Steps are individual tasks that run sequentially within a job
+    steps:
+      # Step 1: Download your repository code to the GitHub runner
+      - name: Checkout repository
+        uses: actions/checkout@v4 # This is a pre-made action from GitHub
+
+      # Step 2: Set up Docker Buildx (advanced Docker builder)
+      # This allows multi-platform builds and better caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Login to Docker Hub so we can push images
+      # Uses secrets you need to add in GitHub Settings
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }} # Your Docker Hub username
+          password: ${{ secrets.DOCKERHUB_TOKEN }} # Your Docker Hub access token
+
+      # Step 4: Create Docker Hub repository if it doesn't exist
+      - name: Create Docker Hub repository
+        run: |
+          REPO_NAME="${{ env.APP_REPO_NAME }}"
+
+          # Check if repository exists
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.DOCKERHUB_TOKEN }}" \
+            "https://hub.docker.com/v2/repositories/${{ secrets.DOCKERHUB_USERNAME }}/${REPO_NAME}/")
+
+          # If repository doesn't exist (404), create it
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "Repository doesn't exist. Creating..."
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.DOCKERHUB_TOKEN }}" \
+              -d '{
+                "namespace": "${{ secrets.DOCKERHUB_USERNAME }}",
+                "name": "'"${REPO_NAME}"'",
+                "description": "Docker repository for streamify application",
+                "is_private": false
+              }' \
+              "https://hub.docker.com/v2/repositories/"
+            echo "Repository created successfully"
+          else
+            echo "Repository already exists"
+          fi
+
+      # Step 5: Generate Docker image tags and labels
+      # This creates smart tags based on branch, commit SHA, etc.
+      - name: Extract metadata for App
+        id: meta # We can reference outputs from this step using 'steps.meta.outputs'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}
+          # Define what tags to create:
+          tags: |
+            type=ref,event=branch              # Tag with branch name (e.g., 'main', 'develop')
+            type=ref,event=pr                  # Tag with PR number (e.g., 'pr-123')
+            type=semver,pattern={{version}}    # Tag with version if you create releases (e.g., '1.0.0')
+            type=semver,pattern={{major}}.{{minor}}  # Tag with major.minor (e.g., '1.0')
+            type=sha,prefix={{branch}}-        # Tag with commit SHA (e.g., 'main-abc1234')
+            type=raw,value=latest,enable={{is_default_branch}}  # Tag 'latest' only on main branch
+
+      # Step 6: Build the Docker image and push it to Docker Hub
+      - name: Build and push App Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ # Build context is the root folder
+          file: ./Dockerfile # Path to Dockerfile
+          push: true # Push to registry after building
+          tags: ${{ steps.meta.outputs.tags }} # Use tags from step 4
+          labels: ${{ steps.meta.outputs.labels }}
+
+          # Add build arguments here
+          build-args: |
+            VITE_GETSTREAMIO_API_KEY=${{ secrets.VITE_GETSTREAMIO_API_KEY }}
+
+          # Caching: This speeds up future builds by reusing layers
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}:buildcache,mode=max

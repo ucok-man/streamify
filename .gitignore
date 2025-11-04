@@ -2,3 +2,4 @@ config.yml
 tmp/
 .env
 build/
+test/
